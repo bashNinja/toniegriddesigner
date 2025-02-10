@@ -670,8 +670,10 @@ class TonieWallDesigner {
     isValidPosition(box) {
         const size = this.draggedSize || box;
         // Convert size to grid units (multiply by 2 since we're using half units)
-        const gridWidth = size.width * 2;
-        const gridHeight = size.height * 2;
+        const actualWidth = 1 + size.width; // 0.5 + (width × 0.5) = (1 + width)/2, multiply by 2 for grid units
+        const actualHeight = 1 + size.height; // 0.5 + (height × 0.5) = (1 + height)/2, multiply by 2 for grid units
+        const gridWidth = actualWidth;
+        const gridHeight = actualHeight;
         
         // Check canvas bounds
         if (box.x < 0 || box.y < 0 || 
@@ -686,8 +688,8 @@ class TonieWallDesigner {
             if (existingBox === this.selectedBox) continue;
             
             // Convert existing box size to grid units
-            const existingGridWidth = existingBox.width * 2;
-            const existingGridHeight = existingBox.height * 2;
+            const existingGridWidth = 1 + existingBox.width;
+            const existingGridHeight = 1 + existingBox.height;
             
             if (!(box.x + gridWidth <= existingBox.x ||
                 box.x >= existingBox.x + existingGridWidth ||
@@ -703,8 +705,8 @@ class TonieWallDesigner {
     findBoxAt(pos) {
         return this.boxes.find(box => {
             // Convert box dimensions to grid units
-            const gridWidth = box.width * 2;
-            const gridHeight = box.height * 2;
+            const gridWidth = 1 + box.width;
+            const gridHeight = 1 + box.height;
             
             return pos.x >= box.x && 
                    pos.x < box.x + gridWidth && 
@@ -820,8 +822,10 @@ class TonieWallDesigner {
         // Convert box coordinates to pixels
         const pixelX = box.x * this.gridSize;
         const pixelY = box.y * this.gridSize;
-        const pixelWidth = box.width * this.fullGridSize;
-        const pixelHeight = box.height * this.fullGridSize;
+        const actualWidth = 1 + box.width; // 0.5 + (width × 0.5) = (1 + width)/2, multiply by 2 for grid units
+        const actualHeight = 1 + box.height; // 0.5 + (height × 0.5) = (1 + height)/2, multiply by 2 for grid units
+        const pixelWidth = actualWidth * this.gridSize;
+        const pixelHeight = actualHeight * this.gridSize;
 
         // Draw the main box
         this.ctx.fillStyle = box.color;
