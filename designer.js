@@ -2,7 +2,8 @@ class TonieWallDesigner {
     constructor() {
         this.canvas = document.getElementById('designCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.gridSize = 40; // pixels per grid unit
+        this.gridSize = 20; // pixels per half grid unit (40px total for a full unit)
+        this.fullGridSize = this.gridSize * 2; // Full grid unit size
         
         // Set canvas to a larger size
         this.canvas.width = 1200;  // Wider canvas
@@ -10,7 +11,7 @@ class TonieWallDesigner {
         
         this.boxes = []; // Placed boxes
         this.selectedSize = { width: 1, height: 1 };
-        this.selectedColor = '#FFB6C1';
+        this.selectedColor = '#000000';
         this.isDragging = false;
         this.currentPosition = null;
         this.draggedSize = null;
@@ -34,26 +35,27 @@ class TonieWallDesigner {
 
         // Predefined color palettes
         this.colorPalettes = {
+            custom: [
+                '#ff0066', // bright pink
+                '#996699', // muted purple
+                '#99cccc', // light blue-gray
+                '#cccccc'  // light gray
+            ],
             pastels: [
-                '#FFB6C1', // pink
+                '#FFB6C1', // light pink
                 '#B6E3FF', // light blue
                 '#B6FFB6', // light green
-                '#FFFFB6', // light yellow
-                '#E3B6FF', // light purple
-                '#FFE3B6'  // light orange
+                '#FFFFB6'  // light yellow
             ],
-            bold: [
+            other: [
                 '#FF4444', // red
                 '#4444FF', // blue
-                '#44FF44', // green
-                '#FFFF44', // yellow
-                '#FF44FF', // purple
-                '#FF8844'  // orange
+                '#44FF44'  // green
             ]
         };
         
         this.recentColors = new Set(); // Keep track of recently used colors
-        this.selectedColor = this.colorPalettes.pastels[0];
+        this.selectedColor = this.colorPalettes.custom[0];
 
         this.previewElements = new Map(); // Store references to preview canvases
         this.dragImages = new Map(); // Store pre-created drag images
@@ -76,8 +78,8 @@ class TonieWallDesigner {
 
         // Define trash zone area
         this.trashZone = {
-            width: this.gridSize * 2,  // 2 grid squares wide
-            height: this.gridSize * 2, // 2 grid squares tall
+            width: this.fullGridSize * 2,  // 2 grid squares wide
+            height: this.fullGridSize * 2, // 2 grid squares tall
             padding: 0  // No padding since we're using grid squares
         };
         this.isTrashHovered = false;
@@ -211,27 +213,7 @@ class TonieWallDesigner {
         const colorGrid = document.createElement('div');
         colorGrid.className = 'palette';
         
-        // Add custom color picker with wrapper for label
-        const customWrapper = document.createElement('div');
-        customWrapper.className = 'color-option-wrapper';
-        customWrapper.style.position = 'absolute';
-        
-        const customColor = document.createElement('input');
-        customColor.type = 'color';
-        customColor.value = this.selectedColor;
-        customColor.className = 'color-option custom-color';
-        customColor.onchange = (e) => this.selectColor(e.target.value);
-        
-        // Add custom label
-        const customLabel = document.createElement('span');
-        customLabel.textContent = '+';
-        customLabel.className = 'custom-label';
-        
-        customWrapper.appendChild(customColor);
-        customWrapper.appendChild(customLabel);
-        colorGrid.appendChild(customWrapper);
-        
-        // Add all palette colors
+        // Add all palette colors first
         Object.values(this.colorPalettes).flat().forEach(color => {
             const colorButton = document.createElement('button');
             colorButton.className = 'color-option';
@@ -239,6 +221,28 @@ class TonieWallDesigner {
             colorButton.onclick = () => this.selectColor(color);
             colorGrid.appendChild(colorButton);
         });
+        
+        // Add custom color picker with wrapper for label at the end
+        const customWrapper = document.createElement('div');
+        customWrapper.className = 'color-option-wrapper';
+        customWrapper.style.position = 'relative';
+        
+        const customColor = document.createElement('input');
+        customColor.type = 'color';
+        customColor.value = '#000000';
+        customColor.className = 'color-option custom-color';
+        customColor.onchange = (e) => this.selectColor(e.target.value);
+        
+        // Add custom label
+        const customLabel = document.createElement('span');
+        customLabel.textContent = '+';
+        customLabel.className = 'custom-label';
+        customLabel.style.right = '27px';
+        customLabel.style.top = '-4px';
+        
+        customWrapper.appendChild(customColor);
+        customWrapper.appendChild(customLabel);
+        colorGrid.appendChild(customWrapper);
         
         // Add recent colors section
         const recentSection = document.createElement('div');
@@ -498,17 +502,34 @@ class TonieWallDesigner {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Draw grid
-        this.ctx.strokeStyle = '#ddd';
         this.ctx.lineWidth = 1;
         
-        for (let x = 0; x <= this.canvas.width; x += this.gridSize) {
+        // Draw main grid lines
+        this.ctx.strokeStyle = '#ddd';
+        for (let x = 0; x <= this.canvas.width; x += this.fullGridSize) {
             this.ctx.beginPath();
             this.ctx.moveTo(x, 0);
             this.ctx.lineTo(x, this.canvas.height);
             this.ctx.stroke();
         }
         
-        for (let y = 0; y <= this.canvas.height; y += this.gridSize) {
+        for (let y = 0; y <= this.canvas.height; y += this.fullGridSize) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
+            this.ctx.stroke();
+        }
+
+        // Draw half-grid lines (lighter)
+        this.ctx.strokeStyle = '#f0f0f0';
+        for (let x = this.gridSize; x < this.canvas.width; x += this.fullGridSize) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.canvas.height);
+            this.ctx.stroke();
+        }
+        
+        for (let y = this.gridSize; y < this.canvas.height; y += this.fullGridSize) {
             this.ctx.beginPath();
             this.ctx.moveTo(0, y);
             this.ctx.lineTo(this.canvas.width, y);
@@ -648,10 +669,14 @@ class TonieWallDesigner {
 
     isValidPosition(box) {
         const size = this.draggedSize || box;
+        // Convert size to grid units (multiply by 2 since we're using half units)
+        const gridWidth = size.width * 2;
+        const gridHeight = size.height * 2;
+        
         // Check canvas bounds
         if (box.x < 0 || box.y < 0 || 
-            box.x + size.width > this.canvas.width / this.gridSize ||
-            box.y + size.height > this.canvas.height / this.gridSize) {
+            box.x + gridWidth > this.canvas.width / this.gridSize ||
+            box.y + gridHeight > this.canvas.height / this.gridSize) {
             return false;
         }
 
@@ -660,10 +685,14 @@ class TonieWallDesigner {
             // Skip checking against itself when moving
             if (existingBox === this.selectedBox) continue;
             
-            if (!(box.x + size.width <= existingBox.x ||
-                box.x >= existingBox.x + existingBox.width ||
-                box.y + size.height <= existingBox.y ||
-                box.y >= existingBox.y + existingBox.height)) {
+            // Convert existing box size to grid units
+            const existingGridWidth = existingBox.width * 2;
+            const existingGridHeight = existingBox.height * 2;
+            
+            if (!(box.x + gridWidth <= existingBox.x ||
+                box.x >= existingBox.x + existingGridWidth ||
+                box.y + gridHeight <= existingBox.y ||
+                box.y >= existingBox.y + existingGridHeight)) {
                 return false;
             }
         }
@@ -672,12 +701,16 @@ class TonieWallDesigner {
     }
 
     findBoxAt(pos) {
-        return this.boxes.find(box => 
-            pos.x >= box.x && 
-            pos.x < box.x + box.width && 
-            pos.y >= box.y && 
-            pos.y < box.y + box.height
-        );
+        return this.boxes.find(box => {
+            // Convert box dimensions to grid units
+            const gridWidth = box.width * 2;
+            const gridHeight = box.height * 2;
+            
+            return pos.x >= box.x && 
+                   pos.x < box.x + gridWidth && 
+                   pos.y >= box.y && 
+                   pos.y < box.y + gridHeight;
+        });
     }
 
     setupContextMenu() {
@@ -784,37 +817,42 @@ class TonieWallDesigner {
     }
 
     drawBoxWithBumps(box) {
+        // Convert box coordinates to pixels
+        const pixelX = box.x * this.gridSize;
+        const pixelY = box.y * this.gridSize;
+        const pixelWidth = box.width * this.fullGridSize;
+        const pixelHeight = box.height * this.fullGridSize;
+
         // Draw the main box
         this.ctx.fillStyle = box.color;
         this.ctx.fillRect(
-            box.x * this.gridSize,
-            box.y * this.gridSize,
-            box.width * this.gridSize,
-            box.height * this.gridSize
+            pixelX,
+            pixelY,
+            pixelWidth,
+            pixelHeight
         );
         
         this.ctx.strokeStyle = '#000';
         this.ctx.strokeRect(
-            box.x * this.gridSize,
-            box.y * this.gridSize,
-            box.width * this.gridSize,
-            box.height * this.gridSize
+            pixelX,
+            pixelY,
+            pixelWidth,
+            pixelHeight
         );
 
         // Draw the bumps
-        const bumpRadius = this.gridSize * 0.1; // Size of bump
-        const bottomY = (box.y + box.height) * this.gridSize;
+        const bumpRadius = this.gridSize * 0.2; // Size of bump
+        const bottomY = pixelY + pixelHeight;
         
         // Determine number of bumps based on width
         const numBumps = box.width <= 1 ? 2 : (box.width === 2 ? 3 : 4);
         
         // Calculate spacing between bumps
-        const totalWidth = box.width * this.gridSize;
-        const spacing = totalWidth / (numBumps + 1);
+        const spacing = pixelWidth / (numBumps + 1);
         
         this.ctx.beginPath();
         for (let i = 1; i <= numBumps; i++) {
-            const bumpX = (box.x * this.gridSize) + (spacing * i);
+            const bumpX = pixelX + (spacing * i);
             
             // Draw semicircle bump
             this.ctx.arc(
