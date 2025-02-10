@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TonieGRID Wall Designer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;  /* Stack elements vertically */
+            gap: 10px;
+        }
+
+        #mainContainer {
+            display: flex;
+            gap: 20px;
+        }
+
+        #canvasContainer {
+            border: 1px solid #ccc;
+            overflow: auto;
+            width: fit-content;  /* Only as wide as the canvas */
+            height: fit-content; /* Only as tall as the canvas */
+        }
+
+        #designCanvas {
+            background-color: white;
+            display: block;
+        }
+
+        #controls {
+            width: 235px;
+            overflow-y: auto;
+        }
+
+        #boxOptions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .box-option {
+            margin: 0;  /* Remove margin */
+            padding: 6px;  /* Reduce padding */
+            border: 1px solid #ddd;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            font-size: 12px;  /* Smaller font */
+        }
+
+        .box-option canvas {
+            border: 1px solid #ccc;
+            background-color: white;
+            margin-right: 4px;  /* Smaller margin */
+        }
+
+        .box-option span {
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .box-option.selected {
+            background-color: #e0e0e0;
+            border-color: #999;
+            box-shadow: 0 0 3px rgba(0,0,0,0.2);
+        }
+
+        .color-picker {
+            margin: 10px 0;
+        }
+
+        #summary {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+        }
+
+        .color-section {
+            margin: 10px 0;
+        }
+
+        .recent-colors {
+            margin-top: 10px;
+        }
+
+        .recent-colors h4 {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            position: relative;
+        }
+
+        .color-option {
+            width: 25px;
+            height: 25px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .color-option.custom-color {
+            padding: 0;
+            border: 1px solid #ccc;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: #000;
+        }
+
+        #controls h3 {
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .color-option-wrapper {
+            display: inline-block;
+        }
+
+        .custom-label {
+            position: absolute;
+            right: -4px;
+            top: -4px;
+            background: #666;
+            color: white;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            font-size: 10px;
+            line-height: 12px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            width: 100%;
+        }
+
+        .description {
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            max-width: 800px;
+        }
+
+        .description p {
+            margin: 4px 0;
+        }
+
+        .clear-button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            background-color: white;
+            color: #666;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: normal;
+            transition: all 0.2s;
+        }
+
+        .clear-button:hover {
+            background-color: #f5f5f5;
+            border-color: #999;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">TonieGRID Wall Designer</div>
+    <div class="description">
+        <p>Design your perfect Tonie box wall layout with this interactive tool. Drag and drop different-sized boxes onto the grid to plan your wall arrangement. Each box represents a TonieGRID element that can hold your Tonie figures.</p>
+        <p>The dots at the bottom of each box indicate magnet positions. Boxes can be moved around, and you can use custom colors to plan different sections or themes. Right-click or drag to the trash can to remove boxes.</p>
+    </div>
+    <div id="mainContainer">
+        <div id="canvasContainer">
+            <canvas id="designCanvas" width="800" height="600"></canvas>
+        </div>
+        
+        <div id="controls">
+            <h3>Box Sizes</h3>
+            <div id="boxOptions"></div>
+            
+            <h3>Box Color</h3>
+            <input type="color" id="boxColor" class="color-picker" value="#FFB6C1">
+            
+            <div id="summary">
+                <h3>Summary</h3>
+                <div id="boxCount"></div>
+            </div>
+        </div>
+    </div>
+    <script src="designer.js"></script>
+</body>
+</html> 
