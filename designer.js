@@ -39,7 +39,7 @@ class TonieWallDesigner {
                 '#ff0066', // bright pink
                 '#996699', // muted purple
                 '#99cccc', // light blue-gray
-                '#cccccc'  // light gray
+                '#FEFCFF'  // milk white
             ],
             pastels: [
                 '#FFB6C1', // light pink
@@ -99,9 +99,11 @@ class TonieWallDesigner {
             
             // Create a mini canvas for the shape preview
             const preview = document.createElement('canvas');
-            const previewSize = 20;
-            preview.width = previewSize * size.width;
-            preview.height = previewSize * size.height;
+            const previewSize = 15; // Reduced from 20
+            const actualWidth = 0.5 + (size.width * 0.5);  // Exact formula
+            const actualHeight = 0.5 + (size.height * 0.5); // Exact formula
+            preview.width = previewSize * actualWidth * 2;  // Double size for full grid units
+            preview.height = previewSize * actualHeight * 2;
             
             this.previewElements.set(size, preview);
             this.updatePreview(preview, size);
@@ -119,14 +121,15 @@ class TonieWallDesigner {
                 this.draggedSize = size;
                 this.selectedSize = size;
                 
-                // Set up drag preview
-                const previewSize = 20;
-                this.dragPreview.style.width = `${previewSize * size.width}px`;
-                this.dragPreview.style.height = `${previewSize * size.height}px`;
+                // Set up drag preview with correct dimensions
+                const actualWidth = 0.5 + (size.width * 0.5);  // Exact formula
+                const actualHeight = 0.5 + (size.height * 0.5); // Exact formula
+                this.dragPreview.style.width = `${actualWidth * this.fullGridSize}px`;
+                this.dragPreview.style.height = `${actualHeight * this.fullGridSize}px`;
                 this.dragPreview.style.backgroundColor = this.selectedColor;
                 this.dragPreview.style.display = 'block';
-                this.dragPreview.style.left = `${e.clientX - (previewSize * size.width / 2)}px`;
-                this.dragPreview.style.top = `${e.clientY - (previewSize * size.height / 2)}px`;
+                this.dragPreview.style.left = `${e.clientX - (actualWidth * this.fullGridSize / 2)}px`;
+                this.dragPreview.style.top = `${e.clientY - (actualHeight * this.fullGridSize / 2)}px`;
 
                 // Create a 1x1 transparent image for the drag ghost
                 const img = new Image();
@@ -141,9 +144,10 @@ class TonieWallDesigner {
             option.addEventListener('drag', (e) => {
                 if (!e.clientX && !e.clientY) return; // Ignore invalid positions
                 
-                const previewSize = 20;
-                this.dragPreview.style.left = `${e.clientX - (previewSize * this.draggedSize.width / 2)}px`;
-                this.dragPreview.style.top = `${e.clientY - (previewSize * this.draggedSize.height / 2)}px`;
+                const actualWidth = 0.5 + (this.draggedSize.width * 0.5);  // Exact formula
+                const actualHeight = 0.5 + (this.draggedSize.height * 0.5); // Exact formula
+                this.dragPreview.style.left = `${e.clientX - (actualWidth * this.fullGridSize / 2)}px`;
+                this.dragPreview.style.top = `${e.clientY - (actualHeight * this.fullGridSize / 2)}px`;
             });
 
             option.addEventListener('dragend', () => {
@@ -374,17 +378,24 @@ class TonieWallDesigner {
                 this.ctx.globalAlpha = 0.5;
                 this.ctx.fillStyle = isValid ? this.selectedBox.color : 'red';
                 this.ctx.strokeStyle = '#000';
+                
+                // Use the exact formula for width and height
+                const actualWidth = 0.5 + (this.selectedBox.width * 0.5);
+                const actualHeight = 0.5 + (this.selectedBox.height * 0.5);
+                const pixelWidth = actualWidth * this.fullGridSize;
+                const pixelHeight = actualHeight * this.fullGridSize;
+                
                 this.ctx.fillRect(
                     newPos.x * this.gridSize,
                     newPos.y * this.gridSize,
-                    this.selectedBox.width * this.gridSize,
-                    this.selectedBox.height * this.gridSize
+                    pixelWidth,
+                    pixelHeight
                 );
                 this.ctx.strokeRect(
                     newPos.x * this.gridSize,
                     newPos.y * this.gridSize,
-                    this.selectedBox.width * this.gridSize,
-                    this.selectedBox.height * this.gridSize
+                    pixelWidth,
+                    pixelHeight
                 );
                 this.ctx.globalAlpha = 1.0;
             }
@@ -669,11 +680,11 @@ class TonieWallDesigner {
 
     isValidPosition(box) {
         const size = this.draggedSize || box;
-        // Convert size to grid units (multiply by 2 since we're using half units)
-        const actualWidth = 1 + size.width; // 0.5 + (width × 0.5) = (1 + width)/2, multiply by 2 for grid units
-        const actualHeight = 1 + size.height; // 0.5 + (height × 0.5) = (1 + height)/2, multiply by 2 for grid units
-        const gridWidth = actualWidth;
-        const gridHeight = actualHeight;
+        // Convert size to grid units using the exact formula: 0.5 + (size × 0.5)
+        const actualWidth = 0.5 + (size.width * 0.5);
+        const actualHeight = 0.5 + (size.height * 0.5);
+        const gridWidth = actualWidth * 2; // Convert to grid units
+        const gridHeight = actualHeight * 2;
         
         // Check canvas bounds
         if (box.x < 0 || box.y < 0 || 
@@ -687,9 +698,9 @@ class TonieWallDesigner {
             // Skip checking against itself when moving
             if (existingBox === this.selectedBox) continue;
             
-            // Convert existing box size to grid units
-            const existingGridWidth = 1 + existingBox.width;
-            const existingGridHeight = 1 + existingBox.height;
+            // Convert existing box size to grid units using the same formula
+            const existingGridWidth = (0.5 + (existingBox.width * 0.5)) * 2;
+            const existingGridHeight = (0.5 + (existingBox.height * 0.5)) * 2;
             
             if (!(box.x + gridWidth <= existingBox.x ||
                 box.x >= existingBox.x + existingGridWidth ||
@@ -704,9 +715,9 @@ class TonieWallDesigner {
 
     findBoxAt(pos) {
         return this.boxes.find(box => {
-            // Convert box dimensions to grid units
-            const gridWidth = 1 + box.width;
-            const gridHeight = 1 + box.height;
+            // Convert box dimensions to grid units using the formula
+            const gridWidth = (0.5 + (box.width * 0.5)) * 2;
+            const gridHeight = (0.5 + (box.height * 0.5)) * 2;
             
             return pos.x >= box.x && 
                    pos.x < box.x + gridWidth && 
@@ -819,13 +830,13 @@ class TonieWallDesigner {
     }
 
     drawBoxWithBumps(box) {
-        // Convert box coordinates to pixels
+        // Convert box coordinates to pixels using the exact formula
         const pixelX = box.x * this.gridSize;
         const pixelY = box.y * this.gridSize;
-        const actualWidth = 1 + box.width; // 0.5 + (width × 0.5) = (1 + width)/2, multiply by 2 for grid units
-        const actualHeight = 1 + box.height; // 0.5 + (height × 0.5) = (1 + height)/2, multiply by 2 for grid units
-        const pixelWidth = actualWidth * this.gridSize;
-        const pixelHeight = actualHeight * this.gridSize;
+        const actualWidth = 0.5 + (box.width * 0.5); // Exact formula
+        const actualHeight = 0.5 + (box.height * 0.5); // Exact formula
+        const pixelWidth = actualWidth * this.fullGridSize;
+        const pixelHeight = actualHeight * this.fullGridSize;
 
         // Draw the main box
         this.ctx.fillStyle = box.color;
