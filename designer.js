@@ -5,9 +5,9 @@ class TonieWallDesigner {
         this.gridSize = 20; // pixels per half grid unit (40px total for a full unit)
         this.fullGridSize = this.gridSize * 2; // Full grid unit size
         
-        // Set canvas to a larger size
-        this.canvas.width = 1200;  // Wider canvas
-        this.canvas.height = 800;  // Taller canvas
+        // Set canvas size
+        this.canvas.width = 1200;
+        this.canvas.height = 760;
         
         this.boxes = []; // Placed boxes
         this.selectedSize = { width: 1, height: 1 };
@@ -75,6 +75,9 @@ class TonieWallDesigner {
         window.addEventListener('mousemove', (e) => {
             this.mousePos = { x: e.clientX, y: e.clientY };
         });
+
+        // Track if we just finished a drag operation
+        this.justFinishedDrag = false;
 
         // Define trash zone area
         this.trashZone = {
@@ -158,21 +161,6 @@ class TonieWallDesigner {
         });
 
         this.setupColorControls();
-
-        // Add clear button after summary
-        const clearButton = document.createElement('button');
-        clearButton.className = 'clear-button';
-        clearButton.textContent = 'Clear All';
-        clearButton.onclick = () => {
-            if (confirm('Are you sure you want to remove all boxes?')) {
-                this.boxes = [];
-                this.draw();
-                this.updateSummary();
-            }
-        };
-        
-        const controls = document.getElementById('controls');
-        controls.appendChild(clearButton);
     }
 
     updatePreview(canvas, size) {
@@ -409,6 +397,11 @@ class TonieWallDesigner {
                     this.selectedBox = null;
                     this.draw();
                     this.updateSummary();
+                    this.justFinishedDrag = true;
+                    // Reset the flag after a short delay
+                    setTimeout(() => {
+                        this.justFinishedDrag = false;
+                    }, 100);
                 } else {
                     const newPos = {
                         x: pos.x - this.dragOffset.x,
@@ -452,6 +445,18 @@ class TonieWallDesigner {
                     this.canvas.style.cursor = 'grab';
                 } else {
                     this.canvas.style.cursor = 'default';
+                }
+            }
+        });
+
+        // Add click handler for trash zone to clear all
+        this.canvas.addEventListener('click', (e) => {
+            const pos = this.getGridPosition(e);
+            if (this.isInTrashZone(pos) && !this.selectedBox && !this.draggedSize && !this.justFinishedDrag) {
+                if (confirm('Are you sure you want to remove all boxes?')) {
+                    this.boxes = [];
+                    this.draw();
+                    this.updateSummary();
                 }
             }
         });
