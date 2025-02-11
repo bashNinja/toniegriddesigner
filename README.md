@@ -18,7 +18,7 @@ Here's an example of recreating the designer's original layout using the tool:
 - ✅ Real-time validation of box placements
 - 📊 Summary of used elements
 - 🗑️ Easy deletion via right-click or drag to trash
-- 📱 Responsive design
+- 🧹 Quick cleanup by clicking the trash can
 
 ## Usage 🚀
 
@@ -27,7 +27,8 @@ Here's an example of recreating the designer's original layout using the tool:
 3. Drag and drop boxes onto the grid
 4. Customize colors using the color picker
 5. Right-click or drag to trash to remove boxes
-6. View your layout summary in real-time
+6. Click the trash can to clear all boxes
+7. View your layout summary in real-time
 
 ## Development 💻
 
