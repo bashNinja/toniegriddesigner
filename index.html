@@ -32,7 +32,7 @@
         }
 
         #controls {
-            width: 235px;
+            width: 250px;
             overflow-y: auto;
         }
 
@@ -44,25 +44,30 @@
         }
 
         .box-option {
-            margin: 0;  /* Remove margin */
-            padding: 6px;  /* Reduce padding */
+            margin: 0;
+            padding: 6px;
             border: 1px solid #ddd;
             cursor: grab;
             display: flex;
             align-items: center;
             transition: background-color 0.2s;
-            font-size: 12px;  /* Smaller font */
+            font-size: 12px;
         }
 
         .box-option canvas {
             border: 1px solid #ccc;
             background-color: white;
-            margin-right: 4px;  /* Smaller margin */
+            margin-right: 4px;
+            flex-shrink: 0;
         }
 
         .box-option span {
             font-size: 12px;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            flex: 1;
         }
 
         .box-option.selected {
@@ -248,6 +253,7 @@
             <p>Design your perfect Tonie box wall layout with this interactive tool. Drag and drop different-sized boxes onto the grid to plan your wall arrangement. Each box represents a TonieGRID element that can hold your Tonie figures.</p>
             <p>The dots at the bottom of each box indicate magnet positions. Boxes can be moved around, and you can use custom colors to plan different sections or themes. Right-click or drag to the trash can to remove boxes.</p>
             <p>3D Models available at <a href="https://makerworld.com/en/models/668415" target="_blank">MakerWorld</a> and <a href="https://www.printables.com/model/935455-toniegrid-modular-shelf-for-tonie-figures-modulare" target="_blank">Printables</a>.</p>
+            <p>View the source code on <a href="https://github.com/bashNinja/toniegriddesigner" target="_blank">GitHub</a>.</p>
         </div>
         <div class="preview-image">
             <img src="https://media.printables.com/media/prints/935455/images/7150874_4b4a4d97-31d0-49d5-a022-1565b8543358_2e1b0853-4c99-4743-9b3b-e6e8806e7cff/thumbs/cover/320x240/jpg/grid2.webp" 
