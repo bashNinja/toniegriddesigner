@@ -2,6 +2,12 @@
 
 An interactive web tool for designing your TonieGRID wall layout. This tool helps you plan and visualize your TonieGRID arrangement before mounting it on your wall.
 
+## Example Layout
+
+Here's an example of recreating the designer's original layout using the tool:
+
+![Example Layout Recreation](example_layout.png)
+
 ## Features
 
 - Drag and drop different-sized TonieGRID elements
